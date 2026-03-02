@@ -17,6 +17,17 @@ class UsersController {
     }
   }
 
+  async login(req, res, next) {
+    try {
+      const user = await this.service.login(req.body);
+      res.status(201).json({ ...user, message: 'Sucess Login' })
+      
+    } catch (error) {
+      next(error)
+    }
+
+  }
+
   async confirmEmail(req, res) {
     try {
       const { token } = req.query;

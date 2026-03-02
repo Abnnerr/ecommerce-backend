@@ -2,10 +2,11 @@ const prisma = require("../../database/prisma");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const transporter = require("../../shared/utils/mail.util");
+const salt = 10
 
 class UsersService {
   async create(data) {
-    const { cpf, email, senha } = data;
+    const { data_nasc, email, cpf, senha } = data;
 
     if (cpf) {
       const cpfExists = await prisma.usuarios.findUnique({ where: { cpf } });
@@ -19,29 +20,63 @@ class UsersService {
       if (emailExists) throw new Error("Email já cadastrado");
     }
 
-    const hashedPassword = await bcrypt.hash(senha, 10);
+    let hashedPassword = await bcrypt.hash(senha, salt);
 
     const user = await prisma.usuarios.create({
-      data: { ...data, senha: hashedPassword },
-      omit: { senha: true },
+      data: {...data, senha: hashedPassword ,data_nasc: new Date(data_nasc)},
+      omit: {senha: true}
     });
 
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "24h",
-    });
+    // const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    //   expiresIn: "24h",
+    // });
 
-    await transporter.sendMail({
-      from: `"3D Tech" <${process.env.EMAIL_USER}>`,
-      to: user.email,
-      subject: "Confirme seu cadastro",
-      html: `
-      <h2>Bem-vindo!</h2>
-      <p>Clique no link para confirmar seu email:</p>
-      <a href=${process.env.APP_URL}/api/users/confirm?token=${token}>Confirmar Email</a>
-      <p>O link é válido por 24 horas.</p>`,
-    });
+    // await transporter.sendMail({
+    //   from: `"3D Tech" <${process.env.EMAIL_USER}>`,
+    //   to: user.email,
+    //   subject: "Confirme seu cadastro",
+    //   html: `
+    //   <h2>Bem-vindo!</h2>
+    //   <p>Clique no link para confirmar seu email:</p>
+    //   <a href=${process.env.APP_URL}/api/users/confirm?token=${token}>Confirmar Email</a>
+    //   <p>O link é válido por 24 horas.</p>`,
+    // });
 
-    return user;
+    return user
+  }
+
+  async login(data) {
+    const { email, senha } = data
+
+    const user = await prisma.usuarios.findUnique({
+      where: { email },
+      omit: {senha: false}
+    })
+
+    if (!user) {
+      throw new Error("Email ou senha incorretos");
+    }
+
+    if (user) {
+      const comparar = await bcrypt.compare(senha, user.senha)
+
+      if (!comparar) {
+        throw new Error("senha Invalida");
+      }
+
+      if (comparar) {
+        const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+          expiresIn: "24h",
+        });
+
+        const { senha: _, ...rest } = user
+
+        return {
+          user: rest,
+          token
+        }
+      }
+    }
   }
 
   async confirmEmail(token) {

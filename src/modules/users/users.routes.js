@@ -4,6 +4,7 @@ const Controller = require("./users.controller");
 const usersController = new Controller();
 
 router.post("/", (req, res, next) => usersController.create(req, res, next));
+router.post("/login", (req, res, next) => usersController.login(req, res, next));
 
 router.get("/confirm", (req, res, next) =>
   usersController.confirmEmail(req, res, next),
