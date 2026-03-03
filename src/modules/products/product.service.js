@@ -224,6 +224,73 @@ class ProductService {
       };
     }
   }
+
+  static async atualizarCores(produtoId, coresIds) {
+  try {
+    const idFormatado = parseInt(produtoId);
+
+    if (isNaN(idFormatado)) {
+      return {
+        sucesso: false,
+        erro: "ID do produto inválido"
+      };
+    }
+
+    if (!Array.isArray(coresIds) || coresIds.length === 0) {
+      return {
+        sucesso: false,
+        erro: "Envie um array válido de IDs de cores"
+      };
+    }
+
+    const produto = await prisma.produtos.findUnique({
+      where: { id: idFormatado },
+    });
+
+    if (!produto) {
+      return {
+        sucesso: false,
+        erro: "Produto não encontrado"
+      };
+    }
+
+    const coresExistentes = await prisma.cores.findMany({
+      where: {
+        id: { in: coresIds.map(id => parseInt(id)) },
+      },
+    });
+
+    if (coresExistentes.length !== coresIds.length) {
+      const idsEncontrados = coresExistentes.map(c => c.id);
+      const coresFaltando = coresIds.filter(
+        id => !idsEncontrados.includes(parseInt(id))
+      );
+      
+      return {
+        sucesso: false,
+        erro: `Cores não existem: ${coresFaltando.join(", ")}`
+      };
+    }
+
+    const produtoAtualizado = await prisma.produtos.update({
+      where: { id: idFormatado },
+      data: {
+        cores: JSON.stringify(coresIds),
+      },
+    });
+
+    return {
+      sucesso: true,
+      dados: serialize(produtoAtualizado)
+    };
+  } catch (error) {
+    return {
+      sucesso: false,
+      erro: "Erro ao atualizar cores: " + error.message
+    };
+  }
+}
+
 }
 
 module.exports = ProductService;
