@@ -1,6 +1,20 @@
 const AppError = require("../../shared/errors/AppError");
 const ProductService = require("./product.service");
 
+// Converter BigInt para Number no JSON
+const serializeProduct = (product) => {
+  if (!product) return null;
+  return {
+    ...product,
+    desconto: product.desconto ? Number(product.desconto) : 0,
+    estoque: product.estoque ? Number(product.estoque) : 0,
+    avaliacoes: product.avaliacoes?.map(av => ({
+      ...av,
+      nota: Number(av.nota)
+    }))
+  };
+};
+
 class ProductController {
   static async create(req, res, next) {
     try {
@@ -60,7 +74,7 @@ class ProductController {
         throw new AppError("O campo 'tamanhos' deve ser um array", 400);
       }
 
-      const resultado = await ProductService.atualizarTamanhos(id, tamanhos);
+      const updated = await ProductService.atualizarTamanhos(id, tamanhos);
 
       res.status(200).json(resultado);
     } catch (error) {

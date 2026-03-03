@@ -1,0 +1,260 @@
+openapi: 3.0.3
+info:
+  title: E-commerce Backend API
+  description: |
+    API RESTful para sistema de E-commerce desenvolvida com Node.js, Express, PostgreSQL (Neon) e Prisma ORM.
+    
+    **Arquitetura:** Modular por feature (service → controller → routes)
+    
+    **Autenticação:** JWT Bearer Token
+    
+    **Base URL:** `/api`
+    
+    ## Recursos Disponíveis
+    - Health Check
+    - Produtos (CRUD completo com relacionamentos)
+    - Cupons (CRUD com autenticação)
+    - Pedidos (Criação com validação de estoque)
+    - Usuários (Gerenciamento e autenticação)
+    - Categorias (Gerenciamento de categorias de produtos)
+    - Avaliações (Sistema de reviews de produtos)
+    
+    ## Padrão de Resposta
+    
+    **Sucesso:**
+    ```json
+    {
+      "data": {},
+      "message": "Operação realizada com sucesso"
+    }
+    ```
+    
+    **Erro:**
+    ```json
+    {
+      "error": "Mensagem de erro",
+      "message": "Descrição detalhada"
+    }
+    ```
+    
+    **Validação:**
+    ```json
+    {
+      "error": "Validation failed",
+      "details": [
+        {
+          "field": "email",
+          "message": "Email inválido"
+        }
+      ]
+    }
+    ```
+    
+  version: 1.0.0
+  contact:
+    name: E-commerce Team
+    email: dev@ecommerce.com
+  license:
+    name: ISC
+
+servers:
+  - url: http://localhost:3000/api
+    description: Servidor de Desenvolvimento
+  - url: https://api.ecommerce.com/api
+    description: Servidor de Produção
+
+tags:
+  - name: Health
+    description: Verificação de saúde da API
+  - name: Products
+    description: Gerenciamento de produtos (CRUD completo)
+  - name: Coupons
+    description: Gerenciamento de cupons de desconto (requer autenticação)
+  - name: Orders
+    description: Gerenciamento de pedidos
+  - name: Users
+    description: Gerenciamento de usuários e autenticação
+  - name: Categories
+    description: Gerenciamento de categorias de produtos
+  - name: Reviews
+    description: Sistema de avaliações de produtos
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Autenticação via JWT Bearer Token.
+        
+        **Como usar:**
+        1. Obtenha o token JWT através do endpoint de autenticação
+        2. Adicione o header: `Authorization: Bearer {token}`
+        
+        **Validação:**
+        - Token é obrigatório para rotas protegidas
+        - Token deve ser válido e não expirado
+        - Retorna 401 se token ausente ou inválido
+  
+  schemas:
+    # Schemas de resposta padrão
+    SuccessResponse:
+      type: object
+      properties:
+        data:
+          type: object
+          description: Dados retornados pela operação
+        message:
+          type: string
+          description: Mensagem de sucesso
+          example: "Operação realizada com sucesso"
+    
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Mensagem de erro
+          example: "Recurso não encontrado"
+        message:
+          type: string
+          description: Descrição detalhada do erro
+    
+    ValidationErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Validation failed"
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+                example: "email"
+              message:
+                type: string
+                example: "Email inválido"
+    
+    UnauthorizedResponse:
+      type: object
+      properties:
+        mensagem:
+          type: string
+          example: "Token é obrigatório"
+    
+    ForbiddenResponse:
+      type: object
+      properties:
+        mensagem:
+          type: string
+          example: "Acesso negado"
+    
+    # Schemas de paginação
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 100
+        totalPages:
+          type: integer
+          example: 10
+    
+    PaginatedResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+        meta:
+          $ref: '#/components/schemas/PaginationMeta'
+  
+  parameters:
+    # Parâmetros reutilizáveis
+    PageParam:
+      name: page
+      in: query
+      description: Número da página
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    
+    LimitParam:
+      name: limit
+      in: query
+      description: Quantidade de itens por página
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    
+    SortParam:
+      name: sort
+      in: query
+      description: Campo para ordenação
+      schema:
+        type: string
+        example: "nome"
+    
+    OrderParam:
+      name: order
+      in: query
+      description: Direção da ordenação
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: asc
+  
+  responses:
+    # Respostas reutilizáveis
+    UnauthorizedError:
+      description: Não autorizado - Token ausente ou inválido
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnauthorizedResponse'
+    
+    ForbiddenError:
+      description: Acesso negado - Permissões insuficientes
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ForbiddenResponse'
+    
+    NotFoundError:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Recurso não encontrado"
+    
+    ValidationError:
+      description: Erro de validação
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ValidationErrorResponse'
+    
+    InternalServerError:
+      description: Erro interno do servidor
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error: "Erro interno do servidor"

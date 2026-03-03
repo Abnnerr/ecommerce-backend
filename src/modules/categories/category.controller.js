@@ -3,91 +3,47 @@ const CategoryService = require("./category.service");
 class CategoryController {
   static async create(req, res) {
     try {
-      const { nome } = req.body;
-      
-      if (!nome) {
-        return res.status(400).json({ erro: "Nome é obrigatório" });
-      }
-
-      const resultado = await CategoryService.create(nome);
-      
-      if (!resultado.sucesso) {
-        return res.status(400).json({ erro: resultado.erro });
-      }
-      
-      res.status(201).json(resultado.dados);
+      const category = await CategoryService.create(req.body);
+      res.status(201).json(category);
     } catch (error) {
-      console.error('Erro no controller:', error);
-      res.status(500).json({ erro: error.message });
+      res.status(400).json({ error: error.message });
     }
   }
 
   static async findAll(req, res) {
     try {
-      const resultado = await CategoryService.findAll();
-      
-      if (!resultado.sucesso) {
-        return res.status(400).json({ erro: resultado.erro });
-      }
-      
-      res.json(resultado.dados);
+      const categories = await CategoryService.findAll();
+      res.json(categories);
     } catch (error) {
-      console.error('Erro no controller:', error);
-      res.status(500).json({ erro: error.message });
+      res.status(500).json({ error: error.message });
     }
   }
 
   static async findById(req, res) {
     try {
-      const { id } = req.params;
-      const resultado = await CategoryService.findById(id);
-      
-      if (!resultado.sucesso) {
-        return res.status(404).json({ erro: resultado.erro });
-      }
-      
-      res.json(resultado.dados);
+      const category = await CategoryService.findById(req.params.id);
+      if (!category) return res.status(404).json({ error: "Categoria não encontrada" });
+      res.json(category);
     } catch (error) {
-      console.error('Erro no controller:', error);
-      res.status(500).json({ erro: error.message });
+      res.status(500).json({ error: error.message });
     }
   }
 
   static async update(req, res) {
     try {
-      const { id } = req.params;
-      const { nome } = req.body;
-      
-      if (!nome) {
-        return res.status(400).json({ erro: "Nome é obrigatório" });
-      }
-
-      const resultado = await CategoryService.update(id, nome);
-      
-      if (!resultado.sucesso) {
-        return res.status(404).json({ erro: resultado.erro });
-      }
-      
-      res.json(resultado.dados);
+      const category = await CategoryService.update(req.params.id, req.body);
+      res.json(category);
     } catch (error) {
-      console.error('Erro no controller:', error);
-      res.status(500).json({ erro: error.message });
+      res.status(404).json({ error: error.message });
     }
   }
 
   static async delete(req, res) {
     try {
-      const { id } = req.params;
-      const resultado = await CategoryService.delete(id);
-      
-      if (!resultado.sucesso) {
-        return res.status(400).json({ erro: resultado.erro });
-      }
-      
-      res.json({ mensagem: resultado.mensagem });
+      await CategoryService.delete(req.params.id);
+      res.status(204).send();
     } catch (error) {
-      console.error('Erro no controller:', error);
-      res.status(500).json({ erro: error.message });
+      res.status(400).json({ error: error.message });
     }
   }
 }
