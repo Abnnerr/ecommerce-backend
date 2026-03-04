@@ -1,0 +1,335 @@
+paths:
+  /products:
+    post:
+      tags:
+        - Products
+      summary: Criar novo produto
+      description: Cria um novo produto no sistema com todas as informações necessárias
+      operationId: createProduct
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateInput'
+            example:
+              nome: "Chaveiro React"
+              valor: "20.00"
+              descricao: "Chaveiro com logo React"
+              desconto: 0
+              estoque: 30
+              categoria_id: 1
+              tamanhos: "Pequeno"
+              cores: "Azul"
+              altura: "5cm"
+              largura: "5cm"
+              comprimento: "1cm"
+              peso: "15g"
+      responses:
+        '201':
+          description: Produto criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '400':
+          description: Requisição inválida
+        '500':
+          description: Erro interno
+
+    get:
+      tags:
+        - Products
+      summary: Listar todos os produtos
+      description: Retorna lista completa de produtos com relacionamentos (categoria, imagens, avaliações)
+      operationId: getAllProducts
+      responses:
+        '200':
+          description: Lista de produtos retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponseWithRelations'
+        '500':
+          description: Erro interno
+
+  /products/{id}:
+    get:
+      tags:
+        - Products
+      summary: Buscar produto por ID
+      description: Retorna um produto específico com todos os relacionamentos
+      operationId: getProductById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do produto
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Produto encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponseWithRelations'
+        '404':
+          description: Produto não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Produto não encontrado"
+        '500':
+          description: Erro interno
+
+    put:
+      tags:
+        - Products
+      summary: Atualizar produto completo
+      description: |
+        Atualiza todos os dados de um produto existente.
+        
+        **Observação:** Usa PUT para substituição completa do recurso
+      operationId: updateProduct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do produto
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateInput'
+            example:
+              nome: "Chaveiro React Atualizado"
+              valor: "25.00"
+              descricao: "Chaveiro com logo React - Nova versão"
+              desconto: 10
+              estoque: 50
+              categoria_id: 1
+              tamanhos: "Pequeno, Médio"
+              cores: "Azul, Vermelho"
+              altura: "5cm"
+              largura: "5cm"
+              comprimento: "1cm"
+              peso: "15g"
+      responses:
+        '200':
+          description: Produto atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponse'
+        '404':
+          description: Produto não encontrado
+        '500':
+          description: Erro interno
+
+    delete:
+      tags:
+        - Products
+      summary: Deletar produto
+      description: |
+        Remove um produto do sistema permanentemente.
+        
+        **Atenção:** Esta operação não pode ser desfeita
+      operationId: deleteProduct
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do produto
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Produto deletado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Produto deletado com sucesso"
+        '404':
+          description: Produto não encontrado
+        '500':
+          description: Erro interno
+
+components:
+  schemas:
+    ProductCreateInput:
+      type: object
+      required:
+        - nome
+        - valor
+        - descricao
+        - estoque
+        - categoria_id
+        - tamanhos
+        - cores
+        - altura
+        - largura
+        - comprimento
+        - peso
+      properties:
+        nome:
+          type: string
+          maxLength: 255
+          description: Nome do produto
+          example: "Chaveiro React"
+        valor:
+          type: string
+          maxLength: 255
+          description: Valor do produto
+          example: "20.00"
+        descricao:
+          type: string
+          maxLength: 255
+          description: Descrição do produto
+          example: "Chaveiro com logo React"
+        desconto:
+          type: integer
+          default: 0
+          description: Percentual de desconto
+          example: 0
+        estoque:
+          type: integer
+          description: Quantidade em estoque
+          example: 30
+        categoria_id:
+          type: integer
+          description: ID da categoria
+          example: 1
+        tamanhos:
+          type: string
+          maxLength: 255
+          description: Tamanhos disponíveis
+          example: "Pequeno"
+        cores:
+          type: string
+          maxLength: 255
+          description: Cores disponíveis
+          example: "Azul"
+        altura:
+          type: string
+          maxLength: 255
+          description: Altura do produto
+          example: "5cm"
+        largura:
+          type: string
+          maxLength: 255
+          description: Largura do produto
+          example: "5cm"
+        comprimento:
+          type: string
+          maxLength: 255
+          description: Comprimento do produto
+          example: "1cm"
+        peso:
+          type: string
+          maxLength: 255
+          description: Peso do produto
+          example: "15g"
+
+    ProductResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        nome:
+          type: string
+          example: "Chaveiro React"
+        valor:
+          type: string
+          example: "20.00"
+        descricao:
+          type: string
+          example: "Chaveiro com logo React"
+        desconto:
+          type: integer
+          example: 0
+        estoque:
+          type: integer
+          example: 30
+        categoria_id:
+          type: integer
+          example: 1
+        tamanhos:
+          type: string
+          example: "Pequeno"
+        cores:
+          type: string
+          example: "Azul"
+        altura:
+          type: string
+          example: "5cm"
+        largura:
+          type: string
+          example: "5cm"
+        comprimento:
+          type: string
+          example: "1cm"
+        peso:
+          type: string
+          example: "15g"
+
+    ProductResponseWithRelations:
+      allOf:
+        - $ref: '#/components/schemas/ProductResponse'
+        - type: object
+          properties:
+            categoria:
+              type: object
+              properties:
+                id:
+                  type: integer
+                nome:
+                  type: string
+            produto_imagens:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  url:
+                    type: string
+                  produto_id:
+                    type: integer
+            avaliacoes:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  nota:
+                    type: integer
+                  descricao:
+                    type: string
+                  usuario_id:
+                    type: integer
+                  usuarios:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      nome:
+                        type: string

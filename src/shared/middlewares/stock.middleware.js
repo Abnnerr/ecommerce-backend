@@ -1,3 +1,5 @@
+const AppError = require("../errors/AppError");
+
 const mockProducts = [
   { id: 1, name: "Produto A", stock: 10 },
   { id: 2, name: "Produto B", stock: 5 },
@@ -9,7 +11,10 @@ function validateStock(req, res, next) {
     const { items } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
-      const error = new Error("Items são obrigatórios para validar estoque");
+      const error = new AppError(
+        "Items são obrigatórios para validar estoque",
+        400,
+      );
       error.status = 400;
       return next(error);
     }
@@ -20,20 +25,20 @@ function validateStock(req, res, next) {
       const { productId, quantity } = item;
 
       if (typeof productId !== "number" || typeof quantity !== "number") {
-        const error = new Error("productId e quantity devem ser números");
-        error.status = 400;
+        const error = new AppError(
+          "productId e quantity devem ser números",
+          400,
+        );
         return next(error);
       }
 
       if (quantity <= 0) {
-        const error = new Error("quantity deve ser maior que zero");
-        error.status = 400;
+        const error = new AppError("quantity deve ser maior que zero", 400);
         return next(error);
       }
 
       if (seenProducts.has(productId)) {
-        const error = new Error("Produto duplicado no pedido");
-        error.status = 400;
+        const error = new AppError("Produto duplicado no pedido", 400);
         return next(error);
       }
 
@@ -42,18 +47,19 @@ function validateStock(req, res, next) {
       const product = mockProducts.find((p) => p.id === productId);
 
       if (!product) {
-        const error = new Error(
-          `Produto com id ${productId} não encontrado`
+        const error = new AppError(
+          `Produto com id ${productId} não encontrado`,
+          404,
         );
-        error.status = 404;
+
         return next(error);
       }
 
       if (product.stock < quantity) {
-        const error = new Error(
-          `Estoque insuficiente para ${product.name}`
+        const error = new AppError(
+          `Estoque insuficiente para ${product.name}`,
+          400,
         );
-        error.status = 400;
         return next(error);
       }
     }

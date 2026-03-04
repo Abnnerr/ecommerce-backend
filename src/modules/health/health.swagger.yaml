@@ -1,0 +1,23 @@
+paths:
+  /health:
+    get:
+      tags:
+        - Health
+      summary: Verificar status da API
+      description: Endpoint para verificar se a API está funcionando corretamente
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API está funcionando
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2024-01-15T10:30:00.000Z"

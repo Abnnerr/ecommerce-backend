@@ -28,9 +28,9 @@ Arquitetura **modular por feature** com padrão: **service → controller → ro
 - **Express**
 - **PostgreSQL (Neon)**
 - **Prisma ORM**
-- (Fase 2) **JWT + bcrypt** (auth)
-- (Fase 2) **Swagger** (documentação)
-- (Fase 2) **Jest + Supertest** (testes)
+- **JWT + bcrypt** (autenticação)
+- **Swagger/OpenAPI 3.0** (documentação completa) ✨
+- (Fase 3) **Jest + Supertest** (testes)
 
 ---
 
@@ -116,6 +116,17 @@ npm run dev
 Health check:
 - `GET http://localhost:3000/api/health`
 
+### 4) Acessar documentação Swagger
+```
+http://localhost:3000/api-docs
+```
+
+**Swagger UI** permite:
+- Visualizar todos os endpoints
+- Testar requisições diretamente
+- Ver schemas e validações
+- Autenticar com JWT Bearer Token
+
 ---
 
 ## ✅ Scripts
@@ -195,6 +206,12 @@ No `src/app/routes.js`, adicionar:
 router.use("/products", productRoutes);
 ```
 
+### IMPORTANTE: documentar no Swagger
+Crie também:
+- `product.swagger.yaml`
+
+Siga o padrão dos módulos existentes. Ver: `docs/SWAGGER_QUICK_GUIDE.md`
+
 ---
 
 # ✅ Regras do Sprint (até segunda)
@@ -259,6 +276,17 @@ git push origin main
 
 ## ✅ Rotas atuais
 - `GET /api/health` → status da API
+- `GET /api-docs` → documentação Swagger interativa
+
+### Módulos Documentados
+- **Products** - CRUD completo com relacionamentos
+- **Coupons** - CRUD com autenticação JWT
+- **Orders** - Criação com validação de estoque
+- **Users** - Gerenciamento e confirmação de email
+- **Categories** - Gerenciamento de categorias
+- **Reviews** - Sistema de avaliações
+
+📚 **Documentação completa:** `docs/SWAGGER_ARCHITECTURE.md`
 
 ---
 

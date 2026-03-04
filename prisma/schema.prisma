@@ -80,8 +80,8 @@ model produtos {
   nome            String            @db.VarChar(255)
   valor           String            @db.VarChar(255)
   descricao       String            @db.VarChar(255)
-  desconto        BigInt?           @default(0)
-  estoque         BigInt
+  desconto        Int?              @default(0)
+  estoque         Int
   categoria_id    Int
   tamanhos        String            @db.VarChar(255)
   cores           String            @db.VarChar(255)

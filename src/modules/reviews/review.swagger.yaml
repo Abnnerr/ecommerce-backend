@@ -1,0 +1,278 @@
+paths:
+  /reviews:
+    post:
+      tags:
+        - Reviews
+      summary: Criar nova avaliação
+      description: |
+        Cria uma nova avaliação para um produto.
+        
+        **Validações:**
+        - Usuário deve existir
+        - Produto deve existir
+        - Nota entre 1 e 5
+      operationId: createReview
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCreateInput'
+            example:
+              nota: 5
+              descricao: "Produto excelente, recomendo!"
+              usuario_id: 1
+              produto_id: 1
+      responses:
+        '201':
+          description: Avaliação criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    get:
+      tags:
+        - Reviews
+      summary: Listar todas as avaliações
+      description: Retorna lista de avaliações com informações de usuário e produto
+      operationId: getAllReviews
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Lista de avaliações retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ReviewResponseWithRelations'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  
+  /reviews/{id}:
+    get:
+      tags:
+        - Reviews
+      summary: Buscar avaliação por ID
+      description: Retorna uma avaliação específica com relacionamentos
+      operationId: getReviewById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da avaliação
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Avaliação encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewResponseWithRelations'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    patch:
+      tags:
+        - Reviews
+      summary: Atualizar avaliação parcialmente
+      description: |
+        Atualiza campos específicos de uma avaliação.
+        
+        **Observação:** Usa PATCH para atualização parcial
+      operationId: updateReview
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da avaliação
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewUpdateInput'
+            example:
+              nota: 4
+              descricao: "Produto bom, mas poderia melhorar a embalagem"
+      responses:
+        '200':
+          description: Avaliação atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    delete:
+      tags:
+        - Reviews
+      summary: Deletar avaliação
+      description: Remove uma avaliação do sistema
+      operationId: deleteReview
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da avaliação
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Avaliação deletada com sucesso
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  
+  /products/{productId}/reviews:
+    get:
+      tags:
+        - Reviews
+      summary: Listar avaliações de um produto
+      description: Retorna todas as avaliações de um produto específico
+      operationId: getProductReviews
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: ID do produto
+          schema:
+            type: integer
+            example: 1
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+      responses:
+        '200':
+          description: Lista de avaliações do produto
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReviewResponseWithRelations'
+                  meta:
+                    type: object
+                    properties:
+                      average_rating:
+                        type: number
+                        format: float
+                        example: 4.5
+                      total_reviews:
+                        type: integer
+                        example: 25
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    ReviewCreateInput:
+      type: object
+      required:
+        - nota
+        - usuario_id
+        - produto_id
+      properties:
+        nota:
+          type: integer
+          minimum: 1
+          maximum: 5
+          description: Nota da avaliação (1 a 5)
+          example: 5
+        descricao:
+          type: string
+          maxLength: 255
+          nullable: true
+          description: Descrição/comentário da avaliação
+          example: "Produto excelente, recomendo!"
+        usuario_id:
+          type: integer
+          description: ID do usuário que está avaliando
+          example: 1
+        produto_id:
+          type: integer
+          description: ID do produto sendo avaliado
+          example: 1
+    
+    ReviewUpdateInput:
+      type: object
+      description: Todos os campos são opcionais para atualização parcial
+      properties:
+        nota:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+        descricao:
+          type: string
+          maxLength: 255
+          nullable: true
+          example: "Produto bom, mas poderia melhorar"
+    
+    ReviewResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único da avaliação
+          example: 1
+        nota:
+          type: integer
+          example: 5
+        descricao:
+          type: string
+          nullable: true
+          example: "Produto excelente, recomendo!"
+        usuario_id:
+          type: integer
+          example: 1
+        produto_id:
+          type: integer
+          example: 1
+    
+    ReviewResponseWithRelations:
+      allOf:
+        - $ref: '#/components/schemas/ReviewResponse'
+        - type: object
+          properties:
+            usuarios:
+              type: object
+              description: Informações do usuário que fez a avaliação
+              properties:
+                id:
+                  type: integer
+                nome:
+                  type: string
+            produtos:
+              type: object
+              description: Informações do produto avaliado
+              properties:
+                id:
+                  type: integer
+                nome:
+                  type: string
+                valor:
+                  type: string

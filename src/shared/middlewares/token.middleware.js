@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const { jwtSecret } = require("../../config/env");
 
 function rotaProtegida(req, res, next) {
     let token = req.headers.authorization;
@@ -12,7 +13,7 @@ function rotaProtegida(req, res, next) {
         // token = jwt.sign({ foo: 'bar' }, process.env.SEGREDO);
         // console.log(token);
         
-        jwt.verify(token, process.env.SEGREDO, function (err, decoded) {
+        jwt.verify(token, jwtSecret, function (err, decoded) {
             if (err) {
                 res.status(401).send({
                     mensagem: "Token inválido"

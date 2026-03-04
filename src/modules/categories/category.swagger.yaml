@@ -1,0 +1,185 @@
+paths:
+  /categories:
+    post:
+      tags:
+        - Categories
+      summary: Criar nova categoria
+      description: Cria uma nova categoria de produtos no sistema
+      operationId: createCategory
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateInput'
+            example:
+              nome: "Eletrônicos"
+      responses:
+        '201':
+          description: Categoria criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    get:
+      tags:
+        - Categories
+      summary: Listar todas as categorias
+      description: Retorna lista completa de categorias cadastradas
+      operationId: getAllCategories
+      responses:
+        '200':
+          description: Lista de categorias retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  
+  /categories/{id}:
+    get:
+      tags:
+        - Categories
+      summary: Buscar categoria por ID
+      description: Retorna uma categoria específica com seus produtos
+      operationId: getCategoryById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da categoria
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Categoria encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponseWithProducts'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    put:
+      tags:
+        - Categories
+      summary: Atualizar categoria
+      description: Atualiza os dados de uma categoria existente
+      operationId: updateCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da categoria
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryCreateInput'
+            example:
+              nome: "Eletrônicos e Tecnologia"
+      responses:
+        '200':
+          description: Categoria atualizada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    delete:
+      tags:
+        - Categories
+      summary: Deletar categoria
+      description: |
+        Remove uma categoria do sistema.
+        
+        **Atenção:** Não é possível deletar categorias com produtos associados
+      operationId: deleteCategory
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID da categoria
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '204':
+          description: Categoria deletada com sucesso
+        '400':
+          description: Categoria possui produtos associados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: "Não é possível deletar categoria com produtos associados"
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    CategoryCreateInput:
+      type: object
+      required:
+        - nome
+      properties:
+        nome:
+          type: string
+          maxLength: 50
+          description: Nome da categoria
+          example: "Eletrônicos"
+    
+    CategoryResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único da categoria
+          example: 1
+        nome:
+          type: string
+          example: "Eletrônicos"
+    
+    CategoryResponseWithProducts:
+      allOf:
+        - $ref: '#/components/schemas/CategoryResponse'
+        - type: object
+          properties:
+            produtos:
+              type: array
+              description: Produtos desta categoria
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  nome:
+                    type: string
+                  valor:
+                    type: string
+                  estoque:
+                    type: integer

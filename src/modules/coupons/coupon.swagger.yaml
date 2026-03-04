@@ -1,0 +1,311 @@
+paths:
+  /coupons:
+    post:
+      tags:
+        - Coupons
+      summary: Criar novo cupom
+      description: |
+        Cria um novo cupom de desconto no sistema.
+        
+        **Requer autenticação JWT**
+      operationId: createCoupon
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponCreateInput'
+            example:
+              nome: "NATAL2024"
+              quantidade: 100
+              validade: "2024-12-25"
+              valor_desc: 30
+      responses:
+        '201':
+          description: Cupom criado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CouponResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    get:
+      tags:
+        - Coupons
+      summary: Listar todos os cupons
+      description: |
+        Retorna lista completa de cupons cadastrados ordenados por validade.
+        
+        **Requer autenticação JWT**
+      operationId: getAllCoupons
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de cupons retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CouponResponse'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /coupons/{id}:
+    get:
+      tags:
+        - Coupons
+      summary: Buscar cupom por ID
+      description: |
+        Retorna um cupom específico pelo ID com relacionamentos (pedidos).
+        
+        **Requer autenticação JWT**
+      operationId: getCouponById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do cupom
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Cupom encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CouponResponseWithRelations'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    put:
+      tags:
+        - Coupons
+      summary: Atualizar cupom completo
+      description: |
+        Atualiza todos os dados de um cupom existente.
+        
+        **Requer autenticação JWT**
+        
+        **Observação:** Usa PUT para substituição completa do recurso
+      operationId: updateCoupon
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do cupom
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CouponCreateInput'
+            example:
+              nome: "NATAL2024"
+              quantidade: 50
+              validade: "2024-12-31"
+              valor_desc: 50
+      responses:
+        '200':
+          description: Cupom atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CouponResponse'
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    
+    delete:
+      tags:
+        - Coupons
+      summary: Deletar cupom
+      description: |
+        Remove um cupom do sistema permanentemente.
+        
+        **Requer autenticação JWT**
+        
+        **Atenção:** Esta operação não pode ser desfeita
+      operationId: deleteCoupon
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do cupom
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Cupom deletado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Cupom deletado com sucesso"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          $ref: '#/components/responses/NotFoundError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  
+  /coupons/{id}/validar:
+    post:
+      tags:
+        - Coupons
+      summary: Validar cupom
+      description: |
+        Valida se um cupom está disponível para uso.
+        
+        **Requer autenticação JWT**
+        
+        **Validações:**
+        - Cupom existe
+        - Quantidade disponível > 0
+        - Data de validade não expirada
+      operationId: validateCoupon
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID do cupom
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Cupom válido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valido:
+                    type: boolean
+                    example: true
+                  cupom:
+                    $ref: '#/components/schemas/CouponResponse'
+        '400':
+          description: Cupom inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valido:
+                    type: boolean
+                    example: false
+                  erro:
+                    type: string
+                    example: "Cupom expirado"
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    CouponCreateInput:
+      type: object
+      required:
+        - nome
+        - quantidade
+        - validade
+        - valor_desc
+      properties:
+        nome:
+          type: string
+          maxLength: 50
+          description: Nome/código do cupom (deve ser único)
+          example: "NATAL2024"
+        quantidade:
+          type: integer
+          minimum: 1
+          description: Quantidade de cupons disponíveis
+          example: 100
+        validade:
+          type: string
+          format: date
+          description: Data de validade do cupom (YYYY-MM-DD)
+          example: "2024-12-25"
+        valor_desc:
+          type: integer
+          minimum: 0
+          description: Valor do desconto em reais
+          example: 30
+
+    CouponResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID único do cupom
+          example: 1
+        nome:
+          type: string
+          example: "NATAL2024"
+        quantidade:
+          type: integer
+          example: 100
+        validade:
+          type: string
+          format: date-time
+          example: "2024-12-25T00:00:00.000Z"
+        valor_desc:
+          type: integer
+          example: 30
+    
+    CouponResponseWithRelations:
+      allOf:
+        - $ref: '#/components/schemas/CouponResponse'
+        - type: object
+          properties:
+            pedidos:
+              type: array
+              description: Pedidos que utilizaram este cupom
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  usuario_id:
+                    type: integer
+                  status:
+                    type: string
+                  valor_total:
+                    type: string
