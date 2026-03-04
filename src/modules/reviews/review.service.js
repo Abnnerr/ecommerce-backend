@@ -22,7 +22,7 @@ class ReviewService {
   static async findById(id) {
     return await prisma.avaliacoes.findUnique({
       where: { id: parseInt(id) },
-      include: { usuarios: true, produtos: true }
+      include: { usuarios: true, produtos: true, }
     });
   }
 

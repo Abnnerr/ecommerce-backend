@@ -9,7 +9,7 @@ class ProductService {
         nome: data.nome,
         valor: data.valor,
         descricao: data.descricao,
-        desconto: data.desconto || 0,
+        desconto: Number(data.desconto) || 0,
         estoque: parseInt(data.estoque),
         categoria_id: parseInt(data.categoria_id),
         tamanhos: data.tamanhos || "[]",
@@ -70,7 +70,7 @@ class ProductService {
         nome: data.nome,
         valor: data.valor,
         descricao: data.descricao,
-        desconto: data.desconto,
+        desconto: Number(data.desconto),
         estoque: data.estoque ? parseInt(data.estoque) : undefined,
         categoria_id: data.categoria_id
           ? parseInt(data.categoria_id)
@@ -95,7 +95,15 @@ class ProductService {
     if (!existe) {
       throw new AppError("Produto não encontrado", 404);
     }
-
+    await prisma.pedido_produto.deleteMany({
+      where: { id_produto: parseInt(id)}
+    })
+    await prisma.avaliacoes.deleteMany( {
+      where: {produto_id: parseInt(id)}
+    })
+    await prisma.produto_imagens.deleteMany({
+      where: {produto_id: parseInt()}
+    })
     return await prisma.produtos.delete({
       where: { id: parseInt(id) },
     });

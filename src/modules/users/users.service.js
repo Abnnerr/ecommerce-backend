@@ -6,7 +6,7 @@ const AppError = require("../../shared/errors/AppError");
 
 class UsersService {
   async create(data) {
-    const { senha, data_nasc } = data;
+    const { senha, data_nasc, nivel } = data;
     console.log(data);
 
     if (!senha) throw new AppError("Senha é obrigatória", 400);
