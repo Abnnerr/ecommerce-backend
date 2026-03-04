@@ -26,7 +26,7 @@ class ProductController {
       const product = await ProductService.getProductById(id);
 
       if (!product) {
-        return res.status(404).json({ error: "Produto não encontrado" });
+        return res.status(404).json({ ...product ,error: "Produto não encontrado" });
       }
 
       res.status(200).json(product);
