@@ -1,3 +1,4 @@
+const serialize = require("../../shared/utils/serialize");
 const CategoryService = require("./category.service");
 
 class CategoryController {

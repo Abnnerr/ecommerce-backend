@@ -38,6 +38,7 @@ class ProductService {
   }
 
   static async findById(id) {
+    console.log(id)
     const product = await prisma.produtos.findUnique({
       where: { id: parseInt(id) },
       include: {

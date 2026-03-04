@@ -6,14 +6,15 @@ const AppError = require("../../shared/errors/AppError");
 
 class UsersService {
   async create(data) {
-    const { senha } = data;
+    const { senha, data_nasc } = data;
+    console.log(data);
 
     if (!senha) throw new AppError("Senha é obrigatória", 400);
 
     const hashedPassword = await bcrypt.hash(senha, 10);
 
     const user = await prisma.usuarios.create({
-      data: { ...data, senha: hashedPassword },
+      data: { ...data, senha: hashedPassword, data_nasc: new Date(data_nasc) },
       omit: { senha: true },
     });
 
@@ -57,6 +58,10 @@ class UsersService {
     return await prisma.usuarios.findMany({
       orderBy: { id: "desc" },
       omit: { senha: true },
+      include: {
+        pedidos: true,
+
+      }
     });
   }
 
@@ -84,7 +89,17 @@ class UsersService {
   }
 
   async delete(id) {
-    return await prisma.usuarios.delete({ where: { id } });
+    await prisma.avaliacoes.deleteMany({
+      where: { usuario_id: id }
+    });
+
+    await prisma.pedidos.deleteMany({
+      where: { usuario_id: id }
+    });
+
+    return await prisma.usuarios.delete({
+      where: { id: id }
+    });
   }
 }
 
