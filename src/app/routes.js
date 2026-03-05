@@ -23,4 +23,7 @@ router.use("/reviews", reviewRoutes);
 router.use("/auth", authRoutes);
 router.use("/categories", categoryRoutes);
 
+
+
+
 module.exports = router;
