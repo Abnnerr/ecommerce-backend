@@ -13,4 +13,6 @@ router.delete("/:id", rotaProtegida, ProductController.delete);
 
 router.put("/:id/tamanhos", rotaProtegida, ProductController.atualizarTamanhos);
 
+router.put("/:id/cores", rotaProtegida, ProductController.atualizarCores);
+
 module.exports = router;

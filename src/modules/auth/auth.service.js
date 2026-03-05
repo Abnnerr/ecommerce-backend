@@ -11,6 +11,9 @@ async function login(email, senha) {
     
     const user = await prisma.usuarios.findUnique({
       where: { email },
+      include: {
+        pedidos: true,
+      }
     });
 
     console.log('👤 Usuário encontrado:', user ? 'Sim' : 'Não');

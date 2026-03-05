@@ -1,4 +1,105 @@
 paths:
+  /orders/fretes:
+    post:
+      tags:
+        - Orders
+      summary: Consultar opções de frete
+      description: |
+        Retorna um array de objetos representando as opções de frete disponíveis para o pedido informado. Cada objeto pode conter informações de preço, prazo, transportadora, erro ou detalhes dos pacotes. O formato da resposta pode variar conforme a disponibilidade dos serviços de entrega.
+        
+      operationId: getFretes
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Dados necessários para calcular o frete (produtos, endereço, etc)
+            example:
+              from:
+                postal_code: "60318520"
+              to:
+                postal_code: "60812450"
+              products:
+                - id: "Produto A"
+                  width: 11
+                  height: 17
+                  length: 11
+                  weight: 1
+                  insurance_value: 10.1
+                  quantity: 1
+                - id: "Produto B"
+                  width: 10
+                  height: 10
+                  length: 12
+                  weight: 0.2
+                  insurance_value: 10.1
+                  quantity: 5
+              options:
+                receipt: false
+                own_hand: false
+              services: "1,2,18"
+      responses:
+        '200':
+          description: Lista de opções de frete disponíveis ou mensagens de erro por serviço.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+              example:
+                - id: 1
+                  name: PAC
+                  error: Transportadora não atende este trecho.
+                  company:
+                    id: 1
+                    name: Correios
+                    picture: https://sandbox.melhorenvio.com.br/images/shipping-companies/correios.png
+                - id: 2
+                  name: SEDEX
+                  price: "18.57"
+                  custom_price: "18.57"
+                  discount: "0.00"
+                  currency: "R$"
+                  delivery_time: 2
+                  delivery_range:
+                    min: 1
+                    max: 2
+                  custom_delivery_time: 2
+                  custom_delivery_range:
+                    min: 1
+                    max: 2
+                  packages:
+                    - price: "18.57"
+                      discount: "0.00"
+                      format: box
+                      dimensions:
+                        height: 15
+                        width: 23
+                        length: 25
+                      weight: "2.00"
+                      insurance_value: "60.60"
+                      products:
+                        - id: Produto A
+                          quantity: 1
+                        - id: Produto B
+                          quantity: 5
+                  additional_services:
+                    receipt: false
+                    own_hand: false
+                    collect: false
+                  company:
+                    id: 1
+                    name: Correios
+                    picture: https://sandbox.melhorenvio.com.br/images/shipping-companies/correios.png
+                - id: 18
+                  name: e-Total
+                  error: Serviço indisponível (-2).
+                  company:
+                    id: 8
+                    name: Total Express
+                    picture: https://sandbox.melhorenvio.com.br/images/shipping-companies/totalexpress.png
   /orders:
     post:
       tags:

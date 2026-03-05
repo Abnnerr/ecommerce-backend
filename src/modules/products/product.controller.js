@@ -81,6 +81,30 @@ class ProductController {
       next(error);
     }
   }
+
+  static async atualizarCores(req, res) {
+  try {
+    const { id } = req.params;
+    const { cores } = req.body;
+
+    if (!Array.isArray(cores)) {
+      return res.status(400).json({ 
+        erro: "O campo 'cores' deve ser um array" 
+      });
+    }
+
+    const resultado = await ProductService.atualizarCores(id, cores);
+
+    if (!resultado.sucesso) {
+      return res.status(400).json({ erro: resultado.erro });
+    }
+
+    res.status(200).json(resultado.dados);
+  } catch (error) {
+    res.status(500).json({ erro: error.message });
+  }
+}
+
 }
 
 module.exports = ProductController;
