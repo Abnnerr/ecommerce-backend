@@ -1,4 +1,5 @@
-const { prisma } = require('../../database/prisma');
+
+const prisma = require('../../database/prisma');
 const AppError = require('../../shared/errors/AppError');
 
 /**
@@ -226,6 +227,9 @@ class OrderService {
    * @returns {Promise<Array>} Array com todos os pedidos incluindo usuário, itens e produtos
    */
   async findAll() {
+
+    console.log('chegou aq');
+    
     try {
       const pedidos = await prisma.pedidos.findMany({
         include: {
@@ -239,6 +243,7 @@ class OrderService {
         },
       });
 
+      
       return pedidos;
     } catch (error) {
       throw new AppError(
@@ -262,9 +267,10 @@ class OrderService {
    */
   async findById(id) {
     try {
-      // Validar se id é número
-      const idNumerico = parseInt(id, 10);
-      
+      console.log('entrou')
+      const idNumerico = Number(id);
+
+      console.log('ID recebido para busca:', id);
       if (isNaN(idNumerico)) {
         throw new AppError('ID do pedido inválido', 400);
       }

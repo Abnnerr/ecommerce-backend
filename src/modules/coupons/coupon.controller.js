@@ -31,6 +31,7 @@ class CouponController {
   static async findById(req, res, next) {
     try {
       const { id } = req.params;
+      
       const resultado = await CouponService.findById(id);
 
       res.json(resultado);

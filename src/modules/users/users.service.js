@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const transporter = require("../../shared/utils/mail.util");
 const AppError = require("../../shared/errors/AppError");
+const salt = 10;
 
 class UsersService {
   async create(data) {
@@ -18,20 +19,20 @@ class UsersService {
       omit: { senha: true },
     });
 
-    // const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-    //   expiresIn: "24h",
-    // });
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+      expiresIn: "24h",
+    });
 
-    // await transporter.sendMail({
-    //   from: `"3D Tech" <${process.env.EMAIL_USER}>`,
-    //   to: user.email,
-    //   subject: "Confirme seu cadastro",
-    //   html: `
-    //   <h2>Bem-vindo!</h2>
-    //   <p>Clique no link para confirmar seu email:</p>
-    //   <a href=${process.env.APP_URL}/api/users/confirm?token=${token}>Confirmar Email</a>
-    //   <p>O link é válido por 24 horas.</p>`,
-    // });
+    await transporter.sendMail({
+      from: `"3D Tech" <${process.env.EMAIL_USER}>`,
+      to: user.email,
+      subject: "Confirme seu cadastro",
+      html: `
+      <h2>Bem-vindo!</h2>
+      <p>Clique no link para confirmar seu email:</p>
+      <a href=https://projeto-ecommerce-lovat.vercel.app/api/users/confirm?token=${token}>Confirmar Email</a>
+      <p>O link é válido por 24 horas.</p>`,
+    });
 
     return user
   }

@@ -4,9 +4,9 @@ const { rotaProtegida } = require("../../shared/middlewares/token.middleware");
 
 const router = Router();
 
-router.use(rotaProtegida);
+// router.use(rotaProtegida);
 
-router.post("/", CouponController.create);
+router.post("/" ,CouponController.create);
 router.get("/", CouponController.findAll);
 router.get("/:id", CouponController.findById);
 router.put("/:id", CouponController.update);

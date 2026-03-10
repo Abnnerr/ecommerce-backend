@@ -4,15 +4,17 @@ const { rotaProtegida } = require("../../shared/middlewares/token.middleware");
 
 const router = Router();
 
+
+
 router.get("/", ProductController.getAll);
 router.get("/:id", ProductController.getById);
 
-router.post("/", rotaProtegida, ProductController.create);
-router.put("/:id", rotaProtegida, ProductController.update);
-router.delete("/:id", rotaProtegida, ProductController.delete);
+router.post("/",  ProductController.create);
+router.put("/:id",  ProductController.update);
+router.delete("/:id",  ProductController.delete);
 
-router.put("/:id/tamanhos", rotaProtegida, ProductController.atualizarTamanhos);
+router.put("/:id/tamanhos",  ProductController.atualizarTamanhos);
 
-router.put("/:id/cores", rotaProtegida, ProductController.atualizarCores);
+router.put("/:id/cores", ProductController.atualizarCores);
 
 module.exports = router;

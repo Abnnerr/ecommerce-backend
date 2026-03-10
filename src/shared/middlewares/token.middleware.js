@@ -3,6 +3,7 @@ const { jwtSecret } = require("../../config/env");
 
 function rotaProtegida(req, res, next) {
     let token = req.headers.authorization;
+    
     if (!token) {
         res.status(401).send({
             mensagem: "Token é obrigatório"
@@ -15,6 +16,8 @@ function rotaProtegida(req, res, next) {
         
         jwt.verify(token, jwtSecret, function (err, decoded) {
             if (err) {
+                console.log('deu erro aq');
+                
                 res.status(401).send({
                     mensagem: "Token inválido"
                 });

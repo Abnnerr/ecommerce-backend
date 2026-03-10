@@ -27,8 +27,12 @@ class CouponService {
   }
 
   static async findById(id) {
-    const coupon = await prisma.cupons.findUnique({
-      where: { id: parseInt(id) },
+    console.log(id);
+    
+    console.log('ENTROUCupon');
+    
+    const coupon = await prisma.cupons.findFirst({
+      where: { nome: id },
       include: { pedidos: true },
     });
 
