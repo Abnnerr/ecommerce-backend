@@ -27,6 +27,7 @@ class FreteService {
                         "User-Agent": "Aplicação (contato@suaempresa.com)"
                     }
                 }
+                
             );
 
             return response.data;
