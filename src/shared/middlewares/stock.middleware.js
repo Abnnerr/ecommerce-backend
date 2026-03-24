@@ -1,45 +1,15 @@
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
+const prisma = require("../../database/prisma");
+const AppError = require("../../shared/errors/AppError");
 
 async function validateStock(req, _res, next) {
   try {
     const { items } = req.body;
 
     if (!Array.isArray(items) || items.length === 0) {
-      const error = new Error("Items são obrigatórios");
-      error.status = 400;
-      return next(error);
+      throw new AppError("Items são obrigatórios", 400);
     }
 
-    const ids = [];
-    const seen = new Set();
-
-    for (const item of items) {
-      if (
-        typeof item.productId !== "number" ||
-        typeof item.quantity !== "number"
-      ) {
-        const error = new Error("productId e quantity devem ser números");
-        error.status = 400;
-        return next(error);
-      }
-
-      if (item.quantity <= 0) {
-        const error = new Error("quantity deve ser maior que zero");
-        error.status = 400;
-        return next(error);
-      }
-
-      if (seen.has(item.productId)) {
-        const error = new Error("Produto duplicado no pedido");
-        error.status = 400;
-        return next(error);
-      }
-
-      seen.add(item.productId);
-      ids.push(item.productId);
-    }
+    const ids = items.map((item) => item.productId);
 
     const produtos = await prisma.produtos.findMany({
       where: { id: { in: ids } },
@@ -47,18 +17,18 @@ async function validateStock(req, _res, next) {
     });
 
     if (produtos.length !== ids.length) {
-      const error = new Error("Produto não encontrado");
-      error.status = 404;
-      return next(error);
+      throw new AppError("Produto não encontrado", 404);
     }
 
     for (const item of items) {
       const produto = produtos.find((p) => p.id === item.productId);
 
+      if (!produto) {
+        throw new AppError("Produto não encontrado", 404);
+      }
+
       if (produto.estoque < BigInt(item.quantity)) {
-        const error = new Error(`Estoque insuficiente para ${produto.nome}`);
-        error.status = 400;
-        return next(error);
+        throw new AppError(`Estoque insuficiente para ${produto.nome}`, 400);
       }
     }
 
@@ -69,42 +39,3 @@ async function validateStock(req, _res, next) {
 }
 
 module.exports = validateStock;
-
-
-
-
-
-// src/shared/middlewares/stock.middleware.js
-// const AppError = require("../errors/AppError");
-// const ProductService = require("../modules/products/product.service");
-
-// const productService = new ProductService();
-
-// async function validateStock(req, res, next) {
-//   try {
-//     const { items } = req.body;
-
-//     if (!Array.isArray(items) || items.length === 0) {
-//       throw new AppError("Items são obrigatórios", 400);
-//     }
-
-//     // Valida formato dos items
-//     for (const item of items) {
-//       if (typeof item.productId !== "number" || typeof item.quantity !== "number") {
-//         throw new AppError("productId e quantity devem ser números", 400);
-//       }
-//       if (item.quantity <= 0) {
-//         throw new AppError("quantity deve ser maior que zero", 400);
-//       }
-//     }
-
-//     // Valida estoque (chama o service)
-//     await productService.validateStock(items);
-    
-//     next();
-//   } catch (error) {
-//     next(error);
-//   }
-// }
-
-// module.exports = validateStock;

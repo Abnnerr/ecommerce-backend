@@ -1,68 +1,96 @@
 const OrderService = require("./order.service");
 
 class OrderController {
-  static async create(req, res) {
+  constructor() {
+    this.service = new OrderService();
+  }
+
+  async create(req, res, next) {
     try {
-      const userId = req.usuarioId;
-      const pedido = await OrderService.create(userId, req.body);
-      res.status(201).json(pedido);
+      const order = await this.service.create(req.body, req.usuario);
+
+      return res.status(201).json({
+        tipo: "success",
+        mensagem: "Pedido criado com sucesso",
+        dados: order,
+      });
     } catch (error) {
-      res.status(400).json({ erro: error.message });
+      next(error);
     }
   }
 
-  static async findAll(req, res) {
+  async getAll(req, res, next) {
     try {
-      const isAdmin = req.usuario?.nivel === 'admin';
-      const pedidos = await OrderService.findAll(req.usuarioId, isAdmin);
-      res.json(pedidos);
+      const orders = await this.service.findAll(req.usuario);
+
+      return res.status(200).json({
+        tipo: "success",
+        mensagem: "Pedidos encontrados",
+        dados: orders,
+      });
     } catch (error) {
-      res.status(400).json({ erro: error.message });
+      next(error);
     }
   }
 
-  static async findById(req, res) {
+  async getById(req, res, next) {
     try {
-      const isAdmin = req.usuario?.nivel === 'admin';
-      const pedido = await OrderService.findById(
-        req.params.id, 
-        req.usuarioId, 
-        isAdmin
-      );
-      res.json(pedido);
+      const { id } = req.params;
+      const order = await this.service.findById(id, req.usuario);
+
+      return res.status(200).json({
+        tipo: "success",
+        mensagem: "Pedido encontrado",
+        dados: order,
+      });
     } catch (error) {
-      res.status(error.message === "Acesso negado" ? 403 : 404)
-        .json({ erro: error.message });
+      next(error);
     }
   }
 
-  static async updateStatus(req, res) {
+  async update(req, res, next) {
     try {
-      const isAdmin = req.usuario?.nivel === 'admin';
+      const { id } = req.params;
+      const order = await this.service.update(id, req.body, req.usuario);
+
+      return res.status(200).json({
+        tipo: "success",
+        mensagem: "Pedido atualizado com sucesso",
+        dados: order,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateStatus(req, res, next) {
+    try {
+      const { id } = req.params;
       const { status } = req.body;
-      
-      if (!status) {
-        return res.status(400).json({ erro: "Status é obrigatório" });
-      }
 
-      const pedido = await OrderService.updateStatus(
-        req.params.id, 
-        status, 
-        isAdmin
-      );
-      res.json(pedido);
+      const order = await this.service.updateStatus(id, status, req.usuario);
+
+      return res.status(200).json({
+        tipo: "success",
+        mensagem: "Status do pedido atualizado com sucesso",
+        dados: order,
+      });
     } catch (error) {
-      res.status(403).json({ erro: error.message });
+      next(error);
     }
   }
 
-  static async delete(req, res) {
+  async delete(req, res, next) {
     try {
-      const isAdmin = req.usuario?.nivel === 'admin';
-      const resultado = await OrderService.delete(req.params.id, isAdmin);
-      res.json(resultado);
+      const { id } = req.params;
+      await this.service.delete(id, req.usuario);
+
+      return res.status(200).json({
+        tipo: "success",
+        mensagem: "Pedido deletado com sucesso",
+      });
     } catch (error) {
-      res.status(403).json({ erro: error.message });
+      next(error);
     }
   }
 }

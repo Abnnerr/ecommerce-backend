@@ -1,63 +1,58 @@
-/**
- * Middleware para validar os itens do pedido no body da requisição
- * Valida estrutura do array de itens e seus campos obrigatórios
- */
-function validarPedido(req, res, next) {
+const AppError = require("../../shared/errors/AppError");
+
+function validarPedido(req, _res, next) {
   try {
-    const { itens } = req.body;
+    const rawItems = req.body.items ?? req.body.itens;
 
-    // Valida se itens foi enviado
-    if (itens === undefined || itens === null) {
-      return res.status(400).json({
-        error: "O campo itens é obrigatório"
-      });
+    if (rawItems === undefined || rawItems === null) {
+      throw new AppError("O campo items é obrigatório", 400);
     }
 
-    // Valida se itens é um array
-    if (!Array.isArray(itens)) {
-      return res.status(400).json({
-        error: "O campo itens deve ser um array"
-      });
+    if (!Array.isArray(rawItems)) {
+      throw new AppError("O campo items deve ser um array", 400);
     }
 
-    // Valida se o array contém pelo menos 1 item
-    if (itens.length === 0) {
-      return res.status(400).json({
-        error: "O pedido deve conter pelo menos 1 item"
-      });
+    if (rawItems.length === 0) {
+      throw new AppError("O pedido deve conter pelo menos 1 item", 400);
     }
 
-    // Valida cada item do array
-    for (let i = 0; i < itens.length; i++) {
-      const item = itens[i];
+    const ids = new Set();
 
-      // Valida produto_id
-      if (item.produto_id === undefined || item.produto_id === null) {
-        return res.status(400).json({
-          error: `Item ${i + 1}: o campo produto_id é obrigatório`
-        });
+    const itemsNormalizados = rawItems.map((item, index) => {
+      const productId = item.productId ?? item.produto_id;
+      const quantity = item.quantity ?? item.quantidade;
+
+      if (productId === undefined || productId === null) {
+        throw new AppError(`Item ${index + 1}: o campo productId é obrigatório`, 400);
       }
 
-      if (typeof item.produto_id !== "number") {
-        return res.status(400).json({
-          error: `Item ${i + 1}: o campo produto_id deve ser um número`
-        });
+      if (quantity === undefined || quantity === null) {
+        throw new AppError(`Item ${index + 1}: o campo quantity é obrigatório`, 400);
       }
 
-      // Valida quantidade
-      if (item.quantidade === undefined || item.quantidade === null) {
-        return res.status(400).json({
-          error: `Item ${i + 1}: o campo quantidade é obrigatório`
-        });
+      if (isNaN(productId) || Number(productId) <= 0) {
+        throw new AppError(`Item ${index + 1}: o campo productId deve ser um número válido`, 400);
       }
 
-      // Revisar
-      if (isNaN(quantidade) || quantidade <= 0) {
-        return res.status(400).json({
-          error: `Item ${i + 1}: o campo quantidade deve ser um número`
-        });
+      if (isNaN(quantity) || Number(quantity) <= 0) {
+        throw new AppError(`Item ${index + 1}: o campo quantity deve ser um número maior que zero`, 400);
       }
-    }
+
+      const normalizedProductId = Number(productId);
+
+      if (ids.has(normalizedProductId)) {
+        throw new AppError(`Item ${index + 1}: produto duplicado no pedido`, 400);
+      }
+
+      ids.add(normalizedProductId);
+
+      return {
+        productId: normalizedProductId,
+        quantity: Number(quantity),
+      };
+    });
+
+    req.body.items = itemsNormalizados;
 
     next();
   } catch (error) {

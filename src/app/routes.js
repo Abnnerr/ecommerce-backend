@@ -10,7 +10,7 @@ const reviewRoutes = require("../modules/reviews/review.routes");
 const orderRoutes = require("../modules/orders/order.routes");
 const couponRoutes = require("../modules/coupons/coupon.routes");
 
-const applyCouponRoutes = require("../modules/coupons/associacoupon.routes");
+// const applyCouponRoutes = require("../modules/coupons/associacoupon.routes");
 
 
 const router = Router();
@@ -24,6 +24,6 @@ router.use("/users", userRoutes);
 router.use("/orders", rotaProtegida, orderRoutes);
 router.use("/reviews", reviewRoutes);
 router.use("/coupons", couponRoutes);
-router.use("/coupons/apply", applyCouponRoutes);
+// router.use("/coupons/apply", applyCouponRoutes);
 
 module.exports = router;
