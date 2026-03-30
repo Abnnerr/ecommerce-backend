@@ -12,7 +12,7 @@ class UsersService {
   }
 
   async create(data) {
-    const { senha, email, nome } = data;
+    const { senha, email, data_nasc } = data;
 
     if (!senha) {
       throw new AppError("Senha é obrigatória", 400);
@@ -28,6 +28,7 @@ class UsersService {
     const user = await this.repository.create({
       ...data,
       senha: hashedPassword,
+      data_nasc: new Date(data_nasc)
     });
 
     const token = jwt.sign(
